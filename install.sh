@@ -1,5 +1,5 @@
 #!/bin/bash
-# Nvim configuration installation
+# Polybar configuration installation
 
 PACKAGE=config
 TARGET=$HOME

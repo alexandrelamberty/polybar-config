@@ -1,6 +1,5 @@
 #!/bin/bash
-# ~/.config/polybar/scripts/tmux_session.sh
-# Display the number of Tmux sessions
+# ~/.config/polybar/scripts/vpn_status.sh
+# Display the VPN status
 # Author: Alexandre Lamberty <mail@alexandrelamberty.com>
-status=$(tmux ls 2>/dev/null | wc -l)
-echo -e "$status"
+echo -e "TODO"

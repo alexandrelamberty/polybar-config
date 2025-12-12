@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
 # ~/.config/polybar/launch.sh
-# Script to launch Polybar
+# Small helper to restart Polybar safely.
 
-# Terminate already running bar instances
-killall -q polybar
+set -euo pipefail
 
-# Wait until the processes have been shut down
-while pgrep -u $UID -x polybar >/dev/null; do sleep 1; done
+if ! command -v polybar >/dev/null 2>&1; then
+  echo "polybar binary not found in PATH" >&2
+  exit 1
+fi
 
-# Start polybar -r reload when the configuration has been modified
+killall -q polybar || true
+
+while pgrep -u "$UID" -x polybar >/dev/null; do
+  sleep 1
+done
+
+DEFAULT_IFACE=$(ip route | awk '/default/ {print $5; exit}')
+export DEFAULT_IFACE
+
 polybar top -r &
 polybar bottom -r &

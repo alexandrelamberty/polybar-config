@@ -1,0 +1,6 @@
+[hardware]
+wlan = wlp0s20f3
+eth = wlp0s20f3
+battery = BAT0
+battery-adapter = AC
+hwmon-path = /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon6/temp1_input

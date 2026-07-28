@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Select a Polybar layout and update config.ini.
+
+set -euo pipefail
+
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+config_file="${POLYBAR_CONFIG_FILE:-$config_home/polybar/config.ini}"
+layouts_dir="$config_home/polybar/layouts"
+layout=''
+
+usage() {
+    printf 'Usage: %s [-l layout] [--list]\n' "${0##*/}" >&2
+}
+
+if [[ ${1:-} == --list ]]; then
+    find "$layouts_dir" -maxdepth 1 -type f -name '*.ini' -printf '%f\n' 2>/dev/null | sed 's/\.ini$//' | sort
+    exit 0
+fi
+
+while getopts ':l:h' option; do
+    case "$option" in
+        l) layout=$OPTARG ;;
+        h) usage; exit 0 ;;
+        *) usage; exit 2 ;;
+    esac
+done
+
+[[ -f "$config_file" ]] || { printf 'Polybar config not found: %s\n' "$config_file" >&2; exit 1; }
+[[ -d "$layouts_dir" ]] || { printf 'Layouts directory not found: %s\n' "$layouts_dir" >&2; exit 1; }
+
+if [[ -z "$layout" ]]; then
+    command -v fzf >/dev/null 2>&1 || { printf 'fzf is required for interactive selection.\n' >&2; exit 1; }
+    layout=$(find "$layouts_dir" -maxdepth 1 -type f -name '*.ini' -printf '%f\n' | sed 's/\.ini$//' | sort | fzf --prompt='Polybar layout > ') || exit 0
+fi
+
+layout=${layout%.ini}
+layout_file="$layouts_dir/$layout.ini"
+[[ -f "$layout_file" ]] || { printf 'Unknown Polybar layout: %s\n' "$layout" >&2; exit 1; }
+
+temporary_file=$(mktemp "${config_file}.XXXXXX")
+trap 'rm -f "$temporary_file"' EXIT
+awk -v layout="$layout_file" '
+    /^include-file = .*\/layouts\/.*\.ini$/ && !updated {
+        print "include-file = " layout
+        updated = 1
+        next
+    }
+    { print }
+' "$config_file" > "$temporary_file"
+
+chmod --reference="$config_file" "$temporary_file"
+mv "$temporary_file" "$config_file"
+trap - EXIT
+
+command -v polybar-msg >/dev/null && polybar-msg cmd restart >/dev/null 2>&1 || true
+printf 'Polybar layout switched to %s.\n' "$layout"

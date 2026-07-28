@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Polybar visual adapter for the global theme mode toggle.
+
+set -euo pipefail
+
+config_file="${POLYBAR_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/polybar/config.ini}"
+global_toggle="${GLOBAL_TOGGLE_MODE:-$HOME/.local/bin/toggle_mode}"
+light_icon="${POLYBAR_LIGHT_ICON:-󰔢}"
+dark_icon="${POLYBAR_DARK_ICON:-󰔡}"
+
+current_theme=$(awk -F ' = ' '/^include-file = .*\/themes\/.*\.ini$/ { print $2; exit }' "$config_file")
+case "$current_theme" in
+    *_light.ini) icon=$light_icon ;;
+    *_dark.ini) icon=$dark_icon ;;
+    *) printf 'Cannot determine Polybar theme mode.\n' >&2; exit 1 ;;
+esac
+
+case "${1:-status}" in
+    status) printf '%%{T2}%s%%{T-}\n' "$icon" ;;
+    toggle|light|dark) exec "$global_toggle" "$1" ;;
+    *) printf 'Usage: %s [status|toggle|light|dark]\n' "${0##*/}" >&2; exit 2 ;;
+esac

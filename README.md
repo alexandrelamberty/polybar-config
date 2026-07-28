@@ -10,7 +10,7 @@ machine with `stow` and tweaked via `hardware.conf` and theme files.
 - Auto-generated hardware configuration via `setup.sh`.
 - Scripted modules for Tor/VPN status, USB storage detection, tmux, scratchpads,
   updates and theming.
-- Toggle between `themes/light.ini` and `themes/dark.ini` directly from Polybar.
+- Switch among paired light/dark themes directly from Polybar.
 - Helper scripts (`launch.sh`, `setup.sh`, `install.sh`) to bootstrap or reload
   the bar safely.
 
@@ -38,9 +38,12 @@ machine with `stow` and tweaked via `hardware.conf` and theme files.
 
 ## Custom scripts overview
 
-- `switch_theme.sh` / `toggle_theme_mode.sh` – prints the current light/dark icon
-  and toggles the include-file inside `config.ini`. Uses absolute paths so the
-  theme swap is reliable.
+- `switch_theme.sh [status|toggle|light|dark]` – prints the current light/dark
+  icon or changes the active theme mode. `toggle_theme_mode.sh` remains a
+  compatibility wrapper.
+- `select_theme.sh` (or `select_themes.sh`) – uses `fzf` to choose a theme
+  directory while retaining the current light/dark mode. Pass `-t material`
+  to select a theme noninteractively.
 - `tor_status.sh` and `vpn_status.sh` – check for running services/processes and
   print coloured status blocks (`󰕥 tor` / `󰒄 vpn`) so you immediately know when a
   secure connection is active.

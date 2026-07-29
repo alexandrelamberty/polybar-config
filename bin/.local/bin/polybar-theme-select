@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Select a Polybar theme while retaining the active light/dark mode.
+
+set -euo pipefail
+
+config_file="${POLYBAR_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/polybar/config.ini}"
+themes_dir="${config_file%/*}/themes"
+theme=''
+
+while getopts ':t:' option; do
+  case "$option" in t) theme=$OPTARG ;; *) exit 2 ;; esac
+done
+
+current=$(awk -F ' = ' '/^include-file = .*\/themes\/.*\.ini$/ { print $2; exit }' "$config_file")
+case "$current" in *_light.ini) mode=light ;; *_dark.ini) mode=dark ;; *) echo 'Cannot determine Polybar theme mode.' >&2; exit 1 ;; esac
+if [[ -z "$theme" ]]; then
+  command -v rofi >/dev/null || { echo 'rofi is required' >&2; exit 1; }
+  theme=$(find "$themes_dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | rofi -dmenu -i -p 'Polybar theme') || exit 0
+fi
+
+target=$(find "$themes_dir/$theme" -maxdepth 1 -type f -name "*_${mode}.ini" -print -quit)
+[[ -n "$target" ]] || { printf 'No %s variant for Polybar theme: %s\n' "$mode" "$theme" >&2; exit 1; }
+tmp=$(mktemp "${config_file}.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+awk -v target="$target" '/^include-file = .*\/themes\/.*\.ini$/ { print "include-file = " target; next } { print }' "$config_file" > "$tmp"
+mv "$tmp" "$config_file"
+polybar-msg cmd restart >/dev/null 2>&1 || true
+printf 'Polybar theme switched to %s (%s mode)\n' "$theme" "$mode"

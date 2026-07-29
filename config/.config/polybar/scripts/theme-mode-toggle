@@ -4,7 +4,7 @@
 set -euo pipefail
 
 config_file="${POLYBAR_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/polybar/config.ini}"
-global_toggle="${GLOBAL_TOGGLE_MODE:-$HOME/.local/bin/toggle_mode}"
+global_toggle="${GLOBAL_TOGGLE_MODE:-$HOME/.local/bin/theme-mode}"
 light_icon="${POLYBAR_LIGHT_ICON:-󰔢}"
 dark_icon="${POLYBAR_DARK_ICON:-󰔡}"
 
